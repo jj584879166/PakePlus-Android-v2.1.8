@@ -1,11 +1,952 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>PakePlus</title>
-    </head>
-    <body>
-        PakePlus
-    </body>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>成员积分管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            padding: 12px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 6px;
+            cursor: pointer;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+            justify-content: center;
+        }
+        .main-btn {
+            padding: 10px 14px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 80px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .main-btn:nth-child(1) {background: #007bff;}
+        .main-btn:nth-child(2) {background: #28a745;}
+        .main-btn:nth-child(3) {background: #ffc107; color:#000;}
+        .main-btn:nth-child(4) {background: #fd7e14;}
+
+        .more-menu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            padding: 8px;
+            min-width: 180px;
+            z-index: 9999;
+            display: none;
+        }
+        .more-menu.show {
+            display: block;
+        }
+        .more-menu button {
+            display: block;
+            width: 100%;
+            padding: 10px 12px;
+            text-align: left;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .more-menu button:hover {
+            background: #f1f3f5;
+        }
+
+        .form-box {
+            background: white;
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.06);
+            margin-bottom: 12px;
+            display: none;
+        }
+        .form-box.show {display: block;}
+        .form-item {
+            margin-bottom: 12px;
+        }
+        .form-item label {
+            display: block;
+            margin-bottom: 4px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .form-item input, .form-item select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #fff;
+        }
+        .photo-upload-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom:12px;
+        }
+        #fileInput {
+            display: none;
+        }
+        .upload-btn {
+            padding: 8px 14px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #previewImg {
+            width: 90px;
+            height: 90px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 2px dashed #e5e7eb;
+            display: none;
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 11px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .member-sort-bar {
+            display: none;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .member-sort-bar.show {
+            display: block;
+        }
+        .member-sort-bar button {
+            padding: 6px 10px;
+            margin: 0 4px;
+            border: none;
+            border-radius: 6px;
+            background: #007bff;
+            color: #fff;
+            font-size: 13px;
+        }
+
+        .member-list, .rank-list {
+            display: none;
+            gap: 8px;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+        .member-list.show, .rank-list.show {display: flex;}
+
+        .member-item {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .member-index {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007bff;
+            width: 26px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .member-avatar {
+            width: 65px;
+            height: 65px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #f1f3f5;
+            flex-shrink: 0;
+        }
+        .member-info {
+            flex: 1;
+            min-width: 0;
+            font-size: 14px;
+        }
+        .info-item {
+            margin-bottom: 3px;
+        }
+        .star-text {
+            color: #ffc107;
+            font-weight: bold;
+            line-height: 1.5;
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+
+        .star-col {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .star-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 6px;
+            border: none;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-star {
+            background: #ffc107;
+        }
+        .sub-star {
+            background: #dc3545;
+        }
+
+        .rank-filter {
+            background: white;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .rank-filter select {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 13px;
+        }
+        .rank-item {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rank-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #f1f3f5;
+            flex-shrink: 0;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal.show {display: flex;}
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 360px;
+        }
+        .modal-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 17px;
+            font-weight: bold;
+        }
+        #modalAvatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin: 0 auto 12px;
+            display: block;
+            cursor: pointer;
+        }
+        .modal-info-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .modal-edit-input {
+            width: 100%;
+            padding: 7px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-top: 3px;
+        }
+        textarea {
+            width: 100%;
+            height: 70px;
+            padding: 7px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        .heart-btn {
+            padding: 7px 10px;
+            background: #e83e8c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            margin: 0 4px;
+            font-size: 13px;
+        }
+        .modal-btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 9px;
+            border-radius: 6px;
+            border: none;
+            color: white;
+            font-size: 14px;
+        }
+        .save-btn {background: #28a745;}
+        .del-btn {background: #dc3545;}
+        .close-btn {background: #6c757d;}
+
+        .empty-tip {
+            text-align: center;
+            padding: 25px 15px;
+            background: #fff;
+            border-radius: 10px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        #importFile, #restoreFile, #modalFileInput {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="title" id="editTitle">成员积分管理系统</h1>
+
+    <div class="btn-group">
+        <button class="main-btn" id="addMemberBtn">录入成员</button>
+        <button class="main-btn" id="memberListBtn">成员列表</button>
+        <button class="main-btn" id="rankBtn">排行榜</button>
+        <button class="main-btn" id="moreBtn">更多 ⋮</button>
+    </div>
+
+    <div class="member-sort-bar" id="memberSortBar">
+        <button id="sortAsc">序号 从小到大</button>
+        <button id="sortDesc">序号 从大到小</button>
+    </div>
+
+    <div class="more-menu" id="moreMenu">
+        <button id="menuSetting">⚙️ 显示设置</button>
+        <button id="menuImport">📤 导入模板</button>
+        <button id="menuExport">📊 导出列表</button>
+        <button id="menuBackup">💾 数据备份</button>
+        <button id="menuRestore">🔄 数据恢复</button>
+        <button id="menuClear">🗑️ 一键清空</button>
+    </div>
+
+    <div class="form-box" id="addForm">
+        <div class="photo-upload-area">
+            <input type="file" id="fileInput">
+            <button class="upload-btn" id="takePhotoBtn">拍照</button>
+            <button class="upload-btn" id="choosePhotoBtn">相册</button>
+            <img src="" id="previewImg">
+        </div>
+
+        <div class="form-item">
+            <label>姓名</label>
+            <input type="text" id="userName" placeholder="姓名">
+        </div>
+        <div class="form-item">
+            <label>性别</label>
+            <select id="userGender">
+                <option value="">不选</option>
+                <option value="男">男</option>
+                <option value="女"></option>
+            </select>
+        </div>
+        <div class="form-item">
+            <label>班级</label>
+            <input type="text" id="userClass" placeholder="班级">
+        </div>
+        <button class="submit-btn" id="saveMemberBtn">保存</button>
+    </div>
+
+    <div class="member-list" id="memberListBox"></div>
+
+    <div class="rank-list" id="rankBox"></div>
+
+    <div class="modal" id="memberModal">
+        <div class="modal-content">
+            <h3 class="modal-title">编辑成员</h3>
+            <img id="modalAvatar">
+            <input type="file" id="modalFileInput">
+            <div class="modal-info-item">姓名：<input class="modal-edit-input" id="editName"></div>
+            <div class="modal-info-item">性别：
+                <select class="modal-edit-input" id="editGender">
+                    <option value=""></option>
+                    <option value="男">男</option>
+                    <option value="女">女</option>
+                </select>
+            </div>
+            <div class="modal-info-item">班级：<input class="modal-edit-input" id="editClass"></div>
+            <div class="modal-info-item">星星：<span id="editStar"></span></div>
+            <div class="modal-info-item">爱心：<span id="editHeart"></span></div>
+            <textarea id="editRemark" placeholder="备注"></textarea>
+            <div>
+                <button class="heart-btn" id="addHeartBtn">❤️ +1</button>
+                <button class="heart-btn" id="subHeartBtn">❤️ -1</button>
+            </div>
+            <div class="modal-btn-group">
+                <button class="modal-btn save-btn" id="saveModalBtn">保存</button>
+                <button class="modal-btn del-btn" id="deleteMemberBtn">删除</button>
+                <button class="modal-btn close-btn" id="closeModalBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="settingModal">
+        <div class="modal-content">
+            <h3 class="modal-title">显示设置</h3>
+            <div style="margin-bottom:6px;"><label><input type="checkbox" id="setName" checked> 显示姓名</label></div>
+            <div style="margin-bottom:6px;"><label><input type="checkbox" id="setGender" checked> 显示性别</label></div>
+            <div style="margin-bottom:6px;"><label><input type="checkbox" id="setClass" checked> 显示班级</label></div>
+            <div style="margin-bottom:6px;"><label><input type="checkbox" id="setStar" checked> 显示星星</label></div>
+            <div style="margin-bottom:6px;"><label><input type="checkbox" id="setHeart" checked> 显示爱心</label></div>
+            <div class="modal-btn-group">
+                <button class="modal-btn save-btn" id="saveSettingBtn">保存</button>
+                <button class="modal-btn close-btn" id="closeSettingBtn">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="importFile" accept=".csv">
+    <input type="file" id="restoreFile" accept=".json">
+</div>
+
+<script>
+const STORAGE_KEY_MEMBER = 'MEM_FINAL';
+const STORAGE_KEY_SETTING = 'SET_FINAL';
+const STORAGE_KEY_TITLE = 'TITLE_FINAL';
+
+let memberList = JSON.parse(localStorage.getItem(STORAGE_KEY_MEMBER) || '[]');
+let hideSetting = JSON.parse(localStorage.getItem(STORAGE_KEY_SETTING) || '{"name":true,"gender":true,"class":true,"star":true,"heart":true}');
+let systemTitle = localStorage.getItem(STORAGE_KEY_TITLE) || '成员积分管理系统';
+
+let currentEditIndex = null;
+
+window.onload = function(){
+    const titleEl = document.getElementById('editTitle');
+    titleEl.innerText = systemTitle;
+    
+    titleEl.ondblclick = function(){
+        const t = prompt('修改标题', systemTitle);
+        if(t && t.trim()){
+            systemTitle = t.trim();
+            titleEl.innerText = systemTitle;
+            localStorage.setItem(STORAGE_KEY_TITLE, systemTitle);
+        }
+    };
+    
+    bindEvents();
+};
+
+function closeMoreMenu() {
+    document.getElementById('moreMenu').classList.remove('show');
+}
+
+function bindEvents(){
+    const moreBtn = document.getElementById('moreBtn');
+    const moreMenu = document.getElementById('moreMenu');
+
+    moreBtn.onclick = (e) => {
+        e.stopPropagation();
+        moreMenu.classList.toggle('show');
+    };
+    document.addEventListener('click', closeMoreMenu);
+    moreMenu.onclick = e => e.stopPropagation();
+
+    document.getElementById('addMemberBtn').onclick = () => {
+        closeMoreMenu();
+        hideAll();
+        document.getElementById('addForm').classList.add('show');
+        resetForm();
+    };
+
+    document.getElementById('memberListBtn').onclick = () => {
+        closeMoreMenu();
+        hideAll();
+        document.getElementById('memberListBox').classList.add('show');
+        document.getElementById('memberSortBar').classList.add('show');
+        renderMemberList();
+    };
+
+    document.getElementById('rankBtn').onclick = () => {
+        closeMoreMenu();
+        hideAll();
+        document.getElementById('rankBox').classList.add('show');
+        document.getElementById('memberSortBar').classList.remove('show');
+        renderRankList();
+    };
+
+    document.getElementById('sortAsc').onclick = () => {
+        closeMoreMenu();
+        memberList.sort((a,b) => (a.customIndex || 0) - (b.customIndex || 0));
+        save();
+        renderMemberList();
+    };
+    document.getElementById('sortDesc').onclick = () => {
+        closeMoreMenu();
+        memberList.sort((a,b) => (b.customIndex || 0) - (a.customIndex || 0));
+        save();
+        renderMemberList();
+    };
+
+    document.getElementById('menuSetting').onclick = () => {
+        closeMoreMenu();
+        document.getElementById('setName').checked = hideSetting.name;
+        document.getElementById('setGender').checked = hideSetting.gender;
+        document.getElementById('setClass').checked = hideSetting.class;
+        document.getElementById('setStar').checked = hideSetting.star;
+        document.getElementById('setHeart').checked = hideSetting.heart;
+        document.getElementById('settingModal').classList.add('show');
+    };
+    document.getElementById('menuImport').onclick = () => {
+        closeMoreMenu();
+        document.getElementById('importFile').click();
+    };
+    document.getElementById('menuExport').onclick = () => {
+        closeMoreMenu();
+        exportCSV();
+    };
+    document.getElementById('menuBackup').onclick = () => {
+        closeMoreMenu();
+        backup();
+    };
+    document.getElementById('menuRestore').onclick = () => {
+        closeMoreMenu();
+        document.getElementById('restoreFile').click();
+    };
+    document.getElementById('menuClear').onclick = () => {
+        closeMoreMenu();
+        clearAll();
+    };
+
+    document.getElementById('takePhotoBtn').onclick = () => {
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInput').click();
+    };
+    document.getElementById('choosePhotoBtn').onclick = () => {
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInput').click();
+    };
+    document.getElementById('fileInput').onchange = handleFile;
+    document.getElementById('saveMemberBtn').onclick = saveMember;
+
+    document.getElementById('closeModalBtn').onclick = () => {
+        document.getElementById('memberModal').classList.remove('show');
+        currentEditIndex = null;
+    };
+    document.getElementById('saveModalBtn').onclick = saveEdit;
+    document.getElementById('deleteMemberBtn').onclick = delMember;
+    document.getElementById('addHeartBtn').onclick = () => changeHeart(1);
+    document.getElementById('subHeartBtn').onclick = () => changeHeart(-1);
+
+    document.getElementById('modalAvatar').onclick = () => {
+        document.getElementById('modalFileInput').value = '';
+        document.getElementById('modalFileInput').click();
+    };
+    document.getElementById('modalFileInput').onchange = function(e){
+        const f = e.target.files[0];
+        if(!f) return;
+        const r = new FileReader();
+        r.readAsDataURL(f);
+        r.onload = () => {
+            document.getElementById('modalAvatar').src = r.result;
+        };
+    };
+
+    document.getElementById('saveSettingBtn').onclick = saveSetting;
+    document.getElementById('closeSettingBtn').onclick = () => {
+        document.getElementById('settingModal').classList.remove('show');
+    };
+
+    document.getElementById('importFile').onchange = doImport;
+    document.getElementById('restoreFile').onchange = doRestore;
+}
+
+function hideAll(){
+    document.getElementById('addForm').classList.remove('show');
+    document.getElementById('memberListBox').classList.remove('show');
+    document.getElementById('rankBox').classList.remove('show');
+    document.getElementById('memberSortBar').classList.remove('show');
+}
+
+function resetForm(){
+    document.getElementById('userName').value = '';
+    document.getElementById('userGender').selectedIndex = 0;
+    document.getElementById('userClass').value = '';
+    document.getElementById('previewImg').style.display = 'none';
+    document.getElementById('previewImg').src = '';
+}
+
+function handleFile(e){
+    const f = e.target.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.readAsDataURL(f);
+    r.onload = () => {
+        const img = document.getElementById('previewImg');
+        img.src = r.result;
+        img.style.display = 'block';
+    };
+}
+
+function saveMember(){
+    const name = document.getElementById('userName').value.trim();
+    const gender = document.getElementById('userGender').value;
+    const cls = document.getElementById('userClass').value.trim();
+    const photo = document.getElementById('previewImg').src || '';
+    memberList.push({
+        id:Date.now(),
+        customIndex: memberList.length + 1,
+        name, gender, className:cls, photo,
+        star:0, heart:0, remark:''
+    });
+    save();
+    alert('保存成功');
+    hideAll();
+}
+
+function getStarHtml(num){
+    let s = `(${num}) `;
+    for(let i=0;i<num;i++){
+        s += '⭐';
+        if((i+1)%10 === 0) s += '\n';
+    }
+    return `<span class="star-text">${s}</span>`;
+}
+
+function renderMemberList(){
+    const box = document.getElementById('memberListBox');
+    box.innerHTML = '';
+    if(memberList.length === 0){
+        box.innerHTML = '<div class="empty-tip">暂无成员</div>';
+        return;
+    }
+    memberList.forEach((m,idx) => {
+        const div = document.createElement('div');
+        div.className = 'member-item';
+        const avatar = m.photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjUiIGhlaWdodD0iNjUiIHZpZXdCb3g9IjAgMCA2NSA2NSIgZmlsbD0iI2U1ZTdlYiI+PHBhdGggZD0iTTMyLjUgNy41QzE4LjEgNy41IDcuNSAxOC4xIDcuNSAzMi41UzE4LjEgNTcuNSAzMi41IDU3LjVTNTcuNSA0Ni45IDU3LjUgMzIuUzQ2LjkgNy41IDMyLjUgNy41WiIvPjxwYXRoIGQ9Ik0zMi41IDE3LjVjLTguMyAwLTE1IDYuNy0xNSAxNXM2LjcgMTUgMTUgMTVzMTUtNi43IDE1LTE1UzQwLjcgMTcuNSAzMi41IDE3LjV6Ii8+PC9zdmc+';
+        
+        let info = '';
+        if(hideSetting.name) info += `<div class="info-item"><label>姓名：</label>${m.name||'未填'}</div>`;
+        if(hideSetting.gender) info += `<div class="info-item"><label>性别：</label>${m.gender||'未选'}</div>`;
+        if(hideSetting.class) info += `<div class="info-item"><label>班级：</label>${m.className||'未填'}</div>`;
+        if(hideSetting.star) info += `<div class="info-item"><label>星星：</label>${getStarHtml(m.star)}</div>`;
+        if(hideSetting.heart) info += `<div class="info-item"><label>爱心：</label>❤️${m.heart}</div>`;
+        
+        let starHtml = '';
+        if(hideSetting.star){
+            starHtml = `
+            <div class="star-col">
+                <button class="star-btn add-star" data-idx="${idx}">+</button>
+                <button class="star-btn sub-star" data-idx="${idx}">−</button>
+            </div>`;
+        }
+
+        div.innerHTML = `
+        <div class="member-index" data-idx="${idx}">${m.customIndex || idx+1}</div>
+        <img src="${avatar}" class="member-avatar">
+        <div class="member-info">${info}</div>
+        ${starHtml}
+        `;
+        box.appendChild(div);
+
+        div.onclick = (e) => {
+            if(e.target.closest('.star-btn') || e.target.closest('.member-index')) return;
+            openEdit(idx);
+        };
+        
+        const indexEl = div.querySelector('.member-index');
+        indexEl.ondblclick = () => {
+            const newVal = prompt('修改序号：', indexEl.innerText);
+            if(newVal === null || newVal === '') return;
+            const num = parseInt(newVal);
+            if(isNaN(num)) return;
+            memberList[idx].customIndex = num;
+            save();
+            renderMemberList();
+        };
+    });
+
+    document.querySelectorAll('.add-star').forEach(b => {
+        b.onclick = e => {
+            e.stopPropagation();
+            const i = b.dataset.idx;
+            memberList[i].star++;
+            save();
+            renderMemberList();
+            renderRankList();
+        };
+    });
+    document.querySelectorAll('.sub-star').forEach(b => {
+        b.onclick = e => {
+            e.stopPropagation();
+            const i = b.dataset.idx;
+            if(memberList[i].star > 0) memberList[i].star--;
+            save();
+            renderMemberList();
+            renderRankList();
+        };
+    });
+}
+
+function openEdit(idx){
+    currentEditIndex = idx;
+    const m = memberList[idx];
+    document.getElementById('modalAvatar').src = m.photo || '';
+    document.getElementById('editName').value = m.name || '';
+    document.getElementById('editGender').value = m.gender || '';
+    document.getElementById('editClass').value = m.className || '';
+    document.getElementById('editStar').innerText = m.star;
+    document.getElementById('editHeart').innerText = m.heart;
+    document.getElementById('editRemark').value = m.remark || '';
+    document.getElementById('memberModal').classList.add('show');
+}
+
+function changeHeart(n){
+    if(currentEditIndex == null) return;
+    const m = memberList[currentEditIndex];
+    if(n === 1) m.heart++;
+    else if(m.heart > 0) m.heart--;
+    document.getElementById('editHeart').innerText = m.heart;
+    save();
+    renderMemberList();
+    renderRankList();
+}
+
+function saveEdit(){
+    if(currentEditIndex == null) return;
+    const m = memberList[currentEditIndex];
+    m.name = document.getElementById('editName').value.trim();
+    m.gender = document.getElementById('editGender').value;
+    m.className = document.getElementById('editClass').value.trim();
+    m.remark = document.getElementById('editRemark').value.trim();
+    
+    const newPhoto = document.getElementById('modalAvatar').src;
+    if(newPhoto) m.photo = newPhoto;
+    
+    save();
+    renderMemberList();
+    renderRankList();
+    alert('保存成功');
+    document.getElementById('memberModal').classList.remove('show');
+}
+
+function delMember(){
+    if(currentEditIndex == null) return;
+    if(!confirm('确定删除？')) return;
+    memberList.splice(currentEditIndex,1);
+    save();
+    renderMemberList();
+    renderRankList();
+    document.getElementById('memberModal').classList.remove('show');
+}
+
+function renderRankList(){
+    const c = document.getElementById('rankBox');
+    c.innerHTML = '';
+    if(memberList.length === 0){
+        c.innerHTML = '<div class="empty-tip">暂无成员</div>';
+        return;
+    }
+    let arr = [...memberList];
+    arr.sort((a,b) => b.star - a.star);
+    arr.forEach((m,i) => {
+        const item = document.createElement('div');
+        item.className = 'rank-item';
+        const avatar = m.photo || 'data:image/svg+xml;base64,PHN2ZyB3aWR0thD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgZmlsbD0iI2U1ZTdlYiI+PHBhdGggZD0iTTMwIDRDEzLjcgNCA0IDEzLjcgNCAzMHM5LjcgMjYgMjYgMjZTMzcgNDMuMyA1NyAzMGMwLTE2LjMtMTIuNy0yNi0yNy0yNnoiLz48cGF0aCBkPSJNMzAgMTJjLTYuNiAwLTEyIDUuNC0xMiAxMnM1LjQgMTIgMTIgMTJzMTItNS40IDEyLTEyUzM2LjYgMTIgMzAgMTJ6Ii8+PC9zdmc+';
+        
+        let info = '';
+        if(hideSetting.name) info += `<div>${m.name||'未命名'}</div>`;
+        if(hideSetting.gender) info += `<div style="font-size:12px;">性别：${m.gender||''}</div>`;
+        if(hideSetting.class) info += `<div style="font-size:12px;">班级：${m.className||''}</div>`;
+        let starHtml = hideSetting.star ? getStarHtml(m.star) : '';
+        let heartHtml = hideSetting.heart ? `❤️${m.heart}` : '';
+        
+        item.innerHTML = `
+        <div style="font-weight:bold;width:26px;text-align:center">${i+1}</div>
+        <img src="${avatar}" class="rank-avatar">
+        <div style="flex:1">
+            ${info}
+            <div style="font-size:12px;color:#666;white-space:pre-wrap">${starHtml} ${heartHtml}</div>
+        </div>
+        `;
+        c.appendChild(item);
+    });
+}
+
+function saveSetting(){
+    hideSetting = {
+        name: document.getElementById('setName').checked,
+        gender: document.getElementById('setGender').checked,
+        class: document.getElementById('setClass').checked,
+        star: document.getElementById('setStar').checked,
+        heart: document.getElementById('setHeart').checked
+    };
+    localStorage.setItem(STORAGE_KEY_SETTING, JSON.stringify(hideSetting));
+    renderMemberList();
+    renderRankList();
+    document.getElementById('settingModal').classList.remove('show');
+}
+
+function save(){
+    localStorage.setItem(STORAGE_KEY_MEMBER, JSON.stringify(memberList));
+}
+
+function doImport(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.readAsText(file, 'utf-8');
+    reader.onload = function(evt){
+        try{
+            const text = evt.target.result.replace(/^\uFEFF/, '');
+            const lines = text.split('\n').map(l=>l.trim()).filter(l=>l);
+            if(lines.length < 1) return alert('文件为空');
+            const list = [];
+            for(let i=1;i<lines.length;i++){
+                const row = lines[i].split(',');
+                const obj = {
+                    id: Date.now()+i,
+                    customIndex: i,
+                    name: row[0]||'',
+                    gender: row[1]||'',
+                    className: row[2]||'',
+                    star: parseInt(row[3])||0,
+                    heart: parseInt(row[4])||0,
+                    remark: row[5]||'',
+                    photo: ''
+                };
+                list.push(obj);
+            }
+            memberList = list;
+            save();
+            renderMemberList();
+            renderRankList();
+            alert('导入成功！');
+        }catch(err){
+            alert('导入失败：格式不正确');
+        }
+    };
+}
+
+function exportCSV(){
+    let csv = "\uFEFF姓名,性别,班级,星星,爱心,备注\n";
+    memberList.forEach(m=>{
+        csv += `${m.name||''},${m.gender||''},${m.className||''},${m.star},${m.heart},${m.remark||''}\n`;
+    });
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '成员列表.csv';
+    a.click();
+}
+
+function backup(){
+    const data = {memberList, hideSetting, systemTitle};
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '成员数据备份.json';
+    a.click();
+}
+
+function doRestore(e){
+    const f = e.target.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.readAsText(f);
+    r.onload = () => {
+        try {
+            const d = JSON.parse(r.result);
+            memberList = d.memberList || [];
+            hideSetting = d.hideSetting || hideSetting;
+            systemTitle = d.systemTitle || systemTitle;
+            localStorage.setItem(STORAGE_KEY_TITLE, systemTitle);
+            document.getElementById('editTitle').innerText = systemTitle;
+            save();
+            renderMemberList();
+            renderRankList();
+            alert('恢复成功');
+        } catch(e) {
+            alert('恢复失败');
+        }
+    };
+}
+
+function clearAll(){
+    if(!confirm('确定清空所有数据？')) return;
+    memberList = [];
+    save();
+    renderMemberList();
+    alert('已清空');
+}
+</script>
+</body>
 </html>
